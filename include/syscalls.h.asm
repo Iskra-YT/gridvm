@@ -31,7 +31,7 @@
     syscall
 %endmacro
 
-%macro SYSCALL_MMAP 1
+%macro SYSCALL_MMAP 1 ; mmap(size)
     mov rax, 9
     xor rdi, rdi
     mov rsi, %1
@@ -39,6 +39,14 @@
     mov r10, 0x22
     mov r8, -1
     xor r9, r9
+    syscall
+%endmacro
+
+%macro SYSCALL_IOCTL 3 ; ioctl(fd, cmd, arg)
+    mov rax, 16
+    mov rdi, %1
+    mov rsi, %2
+    mov rdx, %3
     syscall
 %endmacro
 
