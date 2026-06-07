@@ -1,3 +1,5 @@
+[BITS 64]
+
 %include "string.h.asm"
 
 section .text

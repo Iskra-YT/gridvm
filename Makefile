@@ -8,7 +8,7 @@ INCLUDE_DIR=include
 SRCS=$(wildcard $(SRC_DIR)/*.asm)
 OBJS=$(patsubst $(SRC_DIR)/%.asm,$(BUILD_DIR)/%.o,$(SRCS))
 
-TARGET=$(BUILD_DIR)/app
+TARGET=$(BUILD_DIR)/gridvm
 
 all: $(BUILD_DIR) $(TARGET)
 
