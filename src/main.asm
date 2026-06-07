@@ -2,10 +2,13 @@
 
 %include "syscalls.h.asm"
 %include "string.h.asm"
+%include "csv.h.asm"
 
 section .rodata
     argc_error: db "Usage: gridvm <filename>", 0xA
     argc_error_len: equ $ - argc_error
+    parse_error: db "Invalid input file", 0xA
+    parse_error_len: equ $ - parse_error
 
 section .text
     global _start
@@ -17,12 +20,12 @@ section .text
         jne .error
 
         mov rdi, [rsp + 16]
-        mov rsi, rdi
-        call strlen
+        call parseFile
+        cmp rax, 0
 
-        mov rcx, rax
-
-        SYSCALL_WRITE 1, rsi, rcx
+        mov rsi, parse_error
+        mov rcx, parse_error_len
+        jne .error
 
         SYSCALL_EXIT 0
 
