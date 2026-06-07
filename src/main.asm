@@ -32,10 +32,10 @@ section .text
         jne .error
 
         call terminalInit
+        call terminalClear
 
         .loop:
             SYSCALL_READ 0, key, 1
-            SYSCALL_WRITE 1, key, 1
 
             cmp byte [key], 'q'
             je .exit
@@ -43,6 +43,7 @@ section .text
             jmp .loop
 
         .exit:
+            call terminalClear
             call terminalRestore
             SYSCALL_EXIT 0
 

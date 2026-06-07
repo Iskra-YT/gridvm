@@ -3,5 +3,6 @@
 
 section .text
     extern strlen
+    extern itoa2
 
 %endif ; GRIDVM_STRING_ASM

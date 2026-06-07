@@ -16,3 +16,20 @@ section .text
 
         .done:
             ret
+
+    itoa2:
+        mov rax, rsi
+
+        xor rdx, rdx
+        mov rcx, 10
+        div rcx
+
+        add al, '0'
+        mov [rdi], al
+
+        mov rax, rdx
+        add al, '0'
+        mov [rdi+1], al
+
+        mov rax, rdi
+        ret

@@ -20,4 +20,7 @@ section .text
     extern terminalInit
     extern terminalRestore
 
+    extern terminalClear
+    extern terminalCursorSet
+
 %endif ; GRIDVM_TERMINAL_ASM
