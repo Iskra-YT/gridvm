@@ -12,32 +12,34 @@ section .text
     parseFile:
         push rbp
         mov rbp, rsp
+        push r12
+        push r13
 
-        sub rsp, 48
+        sub rsp, 32 ; Adjusted stack for saved registers
 
         SYSCALL_OPEN rdi, O_RDONLY, 0
-        mov [rbp-8], rax
+        mov [rbp-24], rax ; Adjusted offset due to extra pushes
         test rax, rax
         js .error
 
         mov rdi, rax
         lea rsi, [rel buffer]
         SYSCALL_READ rdi, rsi, 65535
-        mov [rbp-16], rax
+        mov [rbp-32], rax
 
-        SYSCALL_CLOSE [rbp-8]
+        SYSCALL_CLOSE [rbp-24]
 
-        xor rcx, rcx
-        xor r11, r11
-        mov qword [rbp-24], 0
-        mov qword [rbp-32], 0
+        xor r12, r12
+        xor r13, r13
+        mov qword [rbp-40], 0 ; col
+        mov qword [rbp-48], 0 ; row
 
         .loop:
-            mov rdx, [rbp-16]
-            cmp rcx, rdx
+            mov rdx, [rbp-32]
+            cmp r12, rdx
             jae .flush_eof
         
-            mov al, [rel buffer + rcx]
+            mov al, [rel buffer + r12]
         
             cmp al, ';'
             je .cell
@@ -45,64 +47,70 @@ section .text
             cmp al, 10
             je .newline
         
-            inc rcx
+            inc r12
             jmp .loop
         
         .cell:
-            mov byte [rel buffer + rcx], 0
+            mov byte [rel buffer + r12], 0
         
             lea rdx, [rel buffer]
-            add rdx, r11
+            add rdx, r13
         
-            mov rdi, [rbp-24]
-            mov rsi, [rbp-32]
+            mov rdi, [rbp-40]
+            mov rsi, [rbp-48]
             call setCell
         
-            inc qword [rbp-24]
-            mov r11, rcx
-            inc r11
+            inc qword [rbp-40]
+            mov r13, r12
+            inc r13
         
-            inc rcx
+            inc r12
             jmp .loop
         
         .newline:
-            mov byte [rel buffer + rcx], 0
+            mov byte [rel buffer + r12], 0
         
             lea rdx, [rel buffer]
-            add rdx, r11
+            add rdx, r13
         
-            mov rdi, [rbp-24]
-            mov rsi, [rbp-32]
+            mov rdi, [rbp-40]
+            mov rsi, [rbp-48]
             call setCell
         
-            mov qword [rbp-24], 0
-            inc qword [rbp-32]
+            mov qword [rbp-40], 0
+            inc qword [rbp-48]
         
-            mov r11, rcx
-            inc r11
+            mov r13, r12
+            inc r13
         
-            inc rcx
+            inc r12
             jmp .loop
         
         .flush_eof:
-            cmp r11, rcx
+            cmp r13, r12
             jae .done
         
-            mov byte [rel buffer + rcx], 0
+            mov byte [rel buffer + r12], 0
         
             lea rdx, [rel buffer]
-            add rdx, r11
+            add rdx, r13
         
-            mov rdi, [rbp-24]
-            mov rsi, [rbp-32]
+            mov rdi, [rbp-40]
+            mov rsi, [rbp-48]
             call setCell
         
         .done:
             mov rax, 0
+            add rsp, 32
+            pop r13
+            pop r12
             leave
             ret
         
         .error:
             mov rax, 1
+            add rsp, 32
+            pop r13
+            pop r12
             leave
             ret

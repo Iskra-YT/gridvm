@@ -10,23 +10,35 @@ section .text
     ; rsi = y (bigint)
     ; rdx = value (str*)
     setCell:
-        lea rcx, [rel grid]
+        cmp rdi, MAX_X
+        jae .done
+        cmp rsi, MAX_Y
+        jae .done
 
         imul rax, rsi, MAX_X
         add  rax, rdi
 
+        lea rcx, [rel grid]
         mov [rcx + rax*8], rdx
 
+    .done:
         ret
 
     ; rdi = x (bigint)
     ; rsi = y (bigint)
     getCell:
-        lea rcx, [rel grid]
+        cmp rdi, MAX_X
+        jae .error
+        cmp rsi, MAX_Y
+        jae .error
 
         imul rax, rsi, MAX_X
         add rax, rdi
 
+        lea rcx, [rel grid]
         mov rax, [rcx + rax*8]
+        ret
 
+    .error:
+        xor rax, rax
         ret

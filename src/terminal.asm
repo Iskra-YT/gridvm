@@ -3,18 +3,30 @@
 %include "terminal.h.asm"
 %include "syscalls.h.asm"
 %include "string.h.asm"
+%include "tui.h.asm"
 
 section .bss
     termios: resb 64
     oldtermios: resb 64
     buffer: resb 16
+    screen_buffer: resb 2000
 
 section .rodata
     clear_screen: db 0x1b, "[2J", 0x1b, "[H"
     clear_len: equ $ - clear_screen
+
     esc: db 0x1b, "["
     semi: db ";"
     H: db "H"
+
+    alt_screen_on:  db 0x1b, "[?1049h"
+    alt_screen_on_len: equ $ - alt_screen_on
+
+    alt_screen_off: db 0x1b, "[?1049l"
+    alt_screen_off_len: equ $ - alt_screen_off
+
+    screen_width:  equ 80
+    screen_height: equ 25
 
 section .text
     terminalInit:
@@ -50,9 +62,11 @@ section .text
 
             SYSCALL_IOCTL 0, TCSETS, termios
 
+            SYSCALL_WRITE 1, alt_screen_on, alt_screen_on_len
             ret
 
     terminalRestore:
+        SYSCALL_WRITE 1, alt_screen_off, alt_screen_off_len
         SYSCALL_IOCTL 0, TCSETS, oldtermios
         ret
 
@@ -100,4 +114,42 @@ section .text
 
         pop rbx
         pop rbp
+        ret
+
+    flushScreen:
+        call terminalClear
+        SYSCALL_WRITE 1, screen_buffer, 2000
+        ret
+
+    ; rdi = index
+    ; al = char
+    putChar:
+        mov [rel screen_buffer + rdi], al
+        ret
+
+    ; rdi = index
+    ; rsi = string
+    putString:
+        .loop:
+            mov al, [rsi]
+            test al, al
+            jz .done
+
+            call putChar
+            inc rsi
+            inc rdi
+            jmp .loop
+        .done:
+            ret
+
+    ; rdi = screen x
+    ; rsi = screen y
+    ; al  = char
+    putCharXY:
+        mov r8, rsi
+        imul r8, SCREEN_W
+        add r8, rdi
+
+        mov rdi, r8
+        call putChar
         ret

@@ -4,12 +4,15 @@
 %include "string.h.asm"
 %include "csv.h.asm"
 %include "terminal.h.asm"
+%include "tui.h.asm"
 
 section .rodata
-    argc_error: db "Usage: gridvm <filename>", 0xA
+    argc_error: db "Usage: gridvm <filename>", 0xA, 0x00
     argc_error_len: equ $ - argc_error
-    parse_error: db "Invalid input file", 0xA
+    parse_error: db "Invalid input file", 0xA, 0x00
     parse_error_len: equ $ - parse_error
+
+    test: db "Hello, World!", 0x00
 
 section .bss
     key: resb 1
@@ -35,9 +38,13 @@ section .text
         call terminalClear
 
         .loop:
+            call drawGrid
+            call flushScreen
             SYSCALL_READ 0, key, 1
 
-            cmp byte [key], 'q'
+            mov al, [rel key]
+
+            cmp al, 17          ; Ctrl+Q
             je .exit
 
             jmp .loop

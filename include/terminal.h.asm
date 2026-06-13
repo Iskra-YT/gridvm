@@ -23,4 +23,10 @@ section .text
     extern terminalClear
     extern terminalCursorSet
 
+    extern putChar
+    extern putCharXY
+    extern putString
+
+    extern flushScreen
+
 %endif ; GRIDVM_TERMINAL_ASM
